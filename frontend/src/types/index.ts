@@ -159,6 +159,7 @@ export interface VehicleRoi {
   registrationNumber: string;
   completedTrips: number;
   totalRevenue: number;
+  acquisitionCost: number;
   costBreakdown: { fuelCost: number; maintenanceCost: number; otherExpenses: number };
   operatingCost: number;
   netProfit: number;

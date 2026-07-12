@@ -132,16 +132,20 @@ export const analyticsService = {
     const totalRevenue = toNum(revenue._sum.revenue);
     const totalDistance = toNum(revenue._sum.distanceKm);
     const liters = toNum(fuelLiters._sum.liters);
+    const acquisitionCost = toNum(vehicle.acquisitionCost);
+    const netProfit = +(totalRevenue - operatingCost).toFixed(2);
 
     return {
       vehicleId,
       registrationNumber: vehicle.registrationNumber,
       completedTrips,
       totalRevenue: +totalRevenue.toFixed(2),
+      acquisitionCost,
       costBreakdown: { fuelCost, maintenanceCost, otherExpenses },
       operatingCost,
-      netProfit: +(totalRevenue - operatingCost).toFixed(2),
-      roiPercent: operatingCost > 0 ? +(((totalRevenue - operatingCost) / operatingCost) * 100).toFixed(2) : null,
+      netProfit,
+      // ROI = net profit earned by the vehicle ÷ its acquisition cost.
+      roiPercent: acquisitionCost > 0 ? +((netProfit / acquisitionCost) * 100).toFixed(2) : null,
       fuelEfficiencyKmPerLitre: liters > 0 ? +(totalDistance / liters).toFixed(2) : null,
     };
   },

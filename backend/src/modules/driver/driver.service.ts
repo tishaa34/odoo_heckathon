@@ -1,4 +1,5 @@
 import { DriverStatus, Prisma } from '@prisma/client';
+import { prisma } from '../../config/prisma';
 import { driverRepository } from './driver.repository';
 import { ApiError } from '../../utils/ApiError';
 import { recordAudit } from '../../utils/audit';
@@ -88,6 +89,17 @@ export const driverService = {
     if (!driver) throw ApiError.notFound('Driver not found.');
     if (driver.status === DriverStatus.ON_TRIP) {
       throw ApiError.businessRule('Cannot delete a driver who is currently on a trip.');
+    }
+    // A suspended driver — or one whose license has expired (auto-suspended) —
+    // cannot be removed from the roster.
+    const licenseExpired = driver.licenseExpiry.getTime() < Date.now();
+    if (driver.status === DriverStatus.SUSPENDED || licenseExpired) {
+      throw ApiError.businessRule("Drivers who are involved in past trips or are suspended can't be deleted!");
+    }
+    // Preserve trip history: block deletion when the driver has any trips (FK).
+    const tripCount = await prisma.trip.count({ where: { driverId: id } });
+    if (tripCount > 0) {
+      throw ApiError.businessRule('Cannot delete drivers with trip history.');
     }
     await driverRepository.delete(id);
     await recordAudit({ userId: actorId, action: AUDIT_ACTIONS.DELETE, entity: 'Driver', entityId: id });

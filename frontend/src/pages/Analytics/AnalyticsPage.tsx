@@ -108,7 +108,7 @@ export default function AnalyticsPage() {
       <Card className="mt-4">
         <CardHeader
           title="Vehicle ROI Explorer"
-          subtitle="ROI = (Revenue − Operating Cost) / Operating Cost"
+          subtitle="ROI = Net Profit ÷ Acquisition Cost"
           action={
             <div className="w-56">
               <Select
@@ -130,11 +130,11 @@ export default function AnalyticsPage() {
             <div className="grid gap-6 md:grid-cols-2">
               <div className="grid grid-cols-2 gap-4">
                 <Metric label="ROI" value={roi.roiPercent != null ? `${roi.roiPercent}%` : 'N/A'} tone={roi.roiPercent != null && roi.roiPercent >= 0 ? 'green' : 'red'} />
-                <Metric label="Net Profit" value={currency(roi.netProfit)} />
+                <Metric label="Net Profit" value={currency(roi.netProfit)} tone={roi.netProfit >= 0 ? 'green' : 'red'} />
+                <Metric label="Acquisition Cost" value={currency(roi.acquisitionCost)} />
                 <Metric label="Revenue" value={currency(roi.totalRevenue)} />
                 <Metric label="Operating Cost" value={currency(roi.operatingCost)} />
                 <Metric label="Completed Trips" value={String(roi.completedTrips)} />
-                <Metric label="Fuel Efficiency" value={roi.fuelEfficiencyKmPerLitre != null ? `${roi.fuelEfficiencyKmPerLitre} km/L` : 'N/A'} />
               </div>
               <div>
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Cost Composition</p>
