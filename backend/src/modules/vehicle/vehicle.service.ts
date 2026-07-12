@@ -14,6 +14,7 @@ interface CreateVehicleInput {
   year?: number;
   capacityKg: number;
   odometerKm?: number;
+  acquisitionCost?: number;
 }
 
 export const vehicleService = {
@@ -28,6 +29,7 @@ export const vehicleService = {
       year: input.year,
       capacityKg: new Prisma.Decimal(input.capacityKg),
       odometerKm: input.odometerKm != null ? new Prisma.Decimal(input.odometerKm) : new Prisma.Decimal(0),
+      acquisitionCost: input.acquisitionCost != null ? new Prisma.Decimal(input.acquisitionCost) : new Prisma.Decimal(0),
     });
     await recordAudit({ userId: actorId, action: AUDIT_ACTIONS.CREATE, entity: 'Vehicle', entityId: vehicle.id });
     return vehicle;
@@ -59,6 +61,7 @@ export const vehicleService = {
       year: data.year,
       capacityKg: data.capacityKg != null ? new Prisma.Decimal(data.capacityKg) : undefined,
       odometerKm: data.odometerKm != null ? new Prisma.Decimal(data.odometerKm) : undefined,
+      acquisitionCost: data.acquisitionCost != null ? new Prisma.Decimal(data.acquisitionCost) : undefined,
     };
     const vehicle = await vehicleRepository.update(id, updateData);
     await recordAudit({ userId: actorId, action: AUDIT_ACTIONS.UPDATE, entity: 'Vehicle', entityId: id });

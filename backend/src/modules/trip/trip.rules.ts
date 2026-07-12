@@ -87,7 +87,8 @@ export function assertDispatchAllowed(
  */
 const TRANSITIONS: Record<string, TripStatus[]> = {
   start: [TripStatus.DISPATCHED],
-  complete: [TripStatus.DISPATCHED, TripStatus.IN_PROGRESS],
+  // A trip must be started (IN_PROGRESS) before it can be completed.
+  complete: [TripStatus.IN_PROGRESS],
   cancel: [TripStatus.DISPATCHED, TripStatus.IN_PROGRESS],
 };
 

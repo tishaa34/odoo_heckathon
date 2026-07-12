@@ -97,6 +97,7 @@ model Vehicle {
   year               Int?
   capacityKg         Decimal       @db.Decimal(10, 2)
   odometerKm         Decimal       @default(0) @db.Decimal(12, 2)
+  acquisitionCost    Decimal       @default(0) @db.Decimal(12, 2)
   status             VehicleStatus @default(AVAILABLE)
   isRetired          Boolean       @default(false)
   createdAt          DateTime      @default(now())

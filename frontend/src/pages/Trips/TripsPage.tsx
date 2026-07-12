@@ -56,7 +56,7 @@ export default function TripsPage() {
             <Play className="h-3.5 w-3.5" /> Start
           </button>
         )}
-        {(trip.status === 'DISPATCHED' || trip.status === 'IN_PROGRESS') && (
+        {trip.status === 'IN_PROGRESS' && (
           <button onClick={() => run(trip.id, 'complete')} disabled={busy} className={`${btn} bg-status-available/15 text-status-available hover:bg-status-available/25`}>
             <CheckCircle2 className="h-3.5 w-3.5" /> Complete
           </button>

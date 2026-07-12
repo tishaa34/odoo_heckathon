@@ -44,19 +44,20 @@ async function seedUsers() {
 
 async function seedVehicles() {
   const vehicles = [
-    { registrationNumber: 'MH12AB1001', make: 'Tata', model: 'Prima 4928', year: 2021, capacityKg: 25000, odometerKm: 120000, status: VehicleStatus.AVAILABLE },
-    { registrationNumber: 'MH12AB1002', make: 'Ashok Leyland', model: 'U-3718', year: 2020, capacityKg: 18000, odometerKm: 210000, status: VehicleStatus.AVAILABLE },
-    { registrationNumber: 'MH12AB1003', make: 'Volvo', model: 'FMX 460', year: 2022, capacityKg: 30000, odometerKm: 85000, status: VehicleStatus.AVAILABLE },
-    { registrationNumber: 'MH12AB1004', make: 'Eicher', model: 'Pro 6028', year: 2019, capacityKg: 15000, odometerKm: 300000, status: VehicleStatus.IN_SHOP },
-    { registrationNumber: 'MH12AB1005', make: 'BharatBenz', model: '2823R', year: 2023, capacityKg: 22000, odometerKm: 40000, status: VehicleStatus.AVAILABLE },
-    { registrationNumber: 'MH12AB1006', make: 'Mahindra', model: 'Blazo X 35', year: 2021, capacityKg: 26000, odometerKm: 150000, status: VehicleStatus.AVAILABLE },
-    { registrationNumber: 'MH12AB1007', make: 'Scania', model: 'R 500', year: 2018, capacityKg: 28000, odometerKm: 420000, status: VehicleStatus.RETIRED, isRetired: true },
-    { registrationNumber: 'MH12AB1008', make: 'Tata', model: 'Signa 3521', year: 2022, capacityKg: 20000, odometerKm: 60000, status: VehicleStatus.AVAILABLE },
+    { registrationNumber: 'MH12AB1001', make: 'Tata', model: 'Prima 4928', year: 2021, capacityKg: 25000, odometerKm: 120000, acquisitionCost: 4200000, status: VehicleStatus.AVAILABLE },
+    { registrationNumber: 'MH12AB1002', make: 'Ashok Leyland', model: 'U-3718', year: 2020, capacityKg: 18000, odometerKm: 210000, acquisitionCost: 3600000, status: VehicleStatus.AVAILABLE },
+    { registrationNumber: 'MH12AB1003', make: 'Volvo', model: 'FMX 460', year: 2022, capacityKg: 30000, odometerKm: 85000, acquisitionCost: 7800000, status: VehicleStatus.AVAILABLE },
+    { registrationNumber: 'MH12AB1004', make: 'Eicher', model: 'Pro 6028', year: 2019, capacityKg: 15000, odometerKm: 300000, acquisitionCost: 2900000, status: VehicleStatus.IN_SHOP },
+    { registrationNumber: 'MH12AB1005', make: 'BharatBenz', model: '2823R', year: 2023, capacityKg: 22000, odometerKm: 40000, acquisitionCost: 4650000, status: VehicleStatus.AVAILABLE },
+    { registrationNumber: 'MH12AB1006', make: 'Mahindra', model: 'Blazo X 35', year: 2021, capacityKg: 26000, odometerKm: 150000, acquisitionCost: 4100000, status: VehicleStatus.AVAILABLE },
+    { registrationNumber: 'MH12AB1007', make: 'Scania', model: 'R 500', year: 2018, capacityKg: 28000, odometerKm: 420000, acquisitionCost: 8900000, status: VehicleStatus.RETIRED, isRetired: true },
+    { registrationNumber: 'MH12AB1008', make: 'Tata', model: 'Signa 3521', year: 2022, capacityKg: 20000, odometerKm: 60000, acquisitionCost: 3950000, status: VehicleStatus.AVAILABLE },
   ];
   for (const v of vehicles) {
     await prisma.vehicle.upsert({
       where: { registrationNumber: v.registrationNumber },
-      update: {},
+      // Backfill acquisition cost on existing rows so re-seeding is idempotent.
+      update: { acquisitionCost: dec(v.acquisitionCost) },
       create: {
         registrationNumber: v.registrationNumber,
         make: v.make,
@@ -64,6 +65,7 @@ async function seedVehicles() {
         year: v.year,
         capacityKg: dec(v.capacityKg),
         odometerKm: dec(v.odometerKm),
+        acquisitionCost: dec(v.acquisitionCost),
         status: v.status,
         isRetired: v.isRetired ?? false,
       },

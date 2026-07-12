@@ -22,8 +22,18 @@ import { ErrorState } from '@/components/common/Feedback';
 import { TRIP_STATUS_META } from '@/constants';
 import { currency, formatDate } from '@/utils/format';
 import type { Trip } from '@/types';
+import SafetyDashboard from './SafetyDashboard';
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  // Safety Officers get a driver/compliance-focused dashboard.
+  if (user?.role === 'SAFETY_OFFICER') return <SafetyDashboard />;
+
+  const showFinancials = user?.role === 'FLEET_MANAGER' || user?.role === 'FINANCIAL_ANALYST';
+  return <OpsDashboard showFinancials={showFinancials} />;
+}
+
+function OpsDashboard({ showFinancials }: { showFinancials: boolean }) {
   const { user } = useAuth();
   const { data, isLoading, isError, refetch } = useDashboard();
   const { data: tripsData, isLoading: tripsLoading } = useTrips({ limit: 6, sort: 'createdAt', order: 'desc' });
@@ -87,14 +97,16 @@ export default function DashboardPage() {
           tone="blue"
           loading={isLoading}
         />
-        <KpiCard
-          label="Net Profit"
-          value={currency(data?.financials.netProfit ?? 0)}
-          icon={TrendingUp}
-          tone={(data?.financials.netProfit ?? 0) >= 0 ? 'green' : 'red'}
-          hint={`Revenue ${currency(data?.financials.totalRevenue ?? 0)}`}
-          loading={isLoading}
-        />
+        {showFinancials && (
+          <KpiCard
+            label="Net Profit"
+            value={currency(data?.financials.netProfit ?? 0)}
+            icon={TrendingUp}
+            tone={(data?.financials.netProfit ?? 0) >= 0 ? 'green' : 'red'}
+            hint={`Revenue ${currency(data?.financials.totalRevenue ?? 0)}`}
+            loading={isLoading}
+          />
+        )}
       </div>
 
       {/* Content row */}

@@ -78,21 +78,38 @@ export default function DriversPage() {
         );
       },
     },
-    { key: 'status', header: 'Status', render: (d) => <StatusBadge status={d.status} meta={DRIVER_STATUS_META} /> },
+    {
+      key: 'status',
+      header: 'Status',
+      // An expired license auto-suspends the driver (blocked from dispatch).
+      render: (d) => (
+        <StatusBadge status={isLicenseExpired(d.licenseExpiry) ? 'SUSPENDED' : d.status} meta={DRIVER_STATUS_META} />
+      ),
+    },
     ...(canWrite
       ? [
           {
             key: 'actions',
             header: '',
             align: 'right' as const,
-            render: (d: Driver) => (
+            render: (d: Driver) => {
+              const expired = isLicenseExpired(d.licenseExpiry);
+              return (
               <div className="flex items-center justify-end gap-1">
                 <button
                   onClick={() => toggleSuspend(d)}
-                  disabled={d.status === 'ON_TRIP'}
-                  className="focus-ring rounded-md p-1.5 text-muted hover:bg-surface-2 hover:text-status-suspended disabled:opacity-30"
+                  disabled={d.status === 'ON_TRIP' || expired}
+                  className="focus-ring rounded-md p-1.5 text-muted hover:bg-surface-2 hover:text-status-suspended disabled:opacity-30 disabled:hover:text-muted"
                   aria-label={d.status === 'SUSPENDED' ? 'Reinstate' : 'Suspend'}
-                  title={d.status === 'SUSPENDED' ? 'Reinstate driver' : 'Suspend driver'}
+                  title={
+                    expired
+                      ? 'License expired — driver is auto-suspended'
+                      : d.status === 'ON_TRIP'
+                        ? 'Driver is on a trip'
+                        : d.status === 'SUSPENDED'
+                          ? 'Reinstate driver'
+                          : 'Suspend driver'
+                  }
                 >
                   <Ban className="h-4 w-4" />
                 </button>
@@ -103,7 +120,8 @@ export default function DriversPage() {
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-            ),
+              );
+            },
           },
         ]
       : []),

@@ -29,6 +29,7 @@ export interface Vehicle {
   year: number | null;
   capacityKg: string | number;
   odometerKm: string | number;
+  acquisitionCost: string | number;
   status: VehicleStatus;
   isRetired: boolean;
   createdAt: string;

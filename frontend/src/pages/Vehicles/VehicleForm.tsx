@@ -8,13 +8,29 @@ import { useCreateVehicle, useUpdateVehicle } from '@/hooks/useVehicles';
 import { toNumber } from '@/utils/format';
 import type { Vehicle } from '@/types';
 
+// Registration format: 2 letters, 2 digits, 2 letters, 4 digits — e.g. AB02TH1234.
+const REGISTRATION_RE = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
+
 const schema = z.object({
-  registrationNumber: z.string().trim().min(3, 'Registration is too short.').max(20).toUpperCase(),
+  registrationNumber: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine((v) => REGISTRATION_RE.test(v), 'Please enter a valid registration number!'),
   make: z.string().trim().min(1, 'Make is required.').max(50),
   model: z.string().trim().min(1, 'Model is required.').max(50),
   year: z.coerce.number().int().min(1950, 'Too old.').max(2100).optional().or(z.literal('' as unknown as number)),
   capacityKg: z.coerce.number({ invalid_type_error: 'Enter a number.' }).positive('Capacity must be greater than zero.').max(100000),
-  odometerKm: z.coerce.number({ invalid_type_error: 'Enter a number.' }).min(0, 'Cannot be negative.').optional(),
+  odometerKm: z.coerce
+    .number({ invalid_type_error: 'Enter a number.' })
+    .min(0, 'Cannot be negative.')
+    .max(10000000, 'Odometer must be between 0 and 10,000,000 km.')
+    .optional(),
+  acquisitionCost: z.coerce
+    .number({ invalid_type_error: 'Enter a number.' })
+    .min(0, 'Cannot be negative.')
+    .max(100000000, 'Cost is too large.')
+    .optional(),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -39,6 +55,7 @@ export function VehicleForm({ open, onClose, vehicle }: { open: boolean; onClose
           year: (vehicle.year ?? undefined) as number,
           capacityKg: toNumber(vehicle.capacityKg),
           odometerKm: toNumber(vehicle.odometerKm),
+          acquisitionCost: toNumber(vehicle.acquisitionCost),
         }
       : undefined,
   });
@@ -59,6 +76,7 @@ export function VehicleForm({ open, onClose, vehicle }: { open: boolean; onClose
       year: values.year ? Number(values.year) : undefined,
       capacityKg: Number(values.capacityKg),
       odometerKm: values.odometerKm != null ? Number(values.odometerKm) : undefined,
+      acquisitionCost: values.acquisitionCost != null ? Number(values.acquisitionCost) : undefined,
     };
     try {
       if (isEdit && vehicle) {
@@ -93,10 +111,10 @@ export function VehicleForm({ open, onClose, vehicle }: { open: boolean; onClose
       <form id="vehicle-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <Input
           label="Registration Number"
-          placeholder="GJ01AB1234"
+          placeholder="AB02TH1234"
           required
           error={errors.registrationNumber?.message}
-          hint="Must be unique across the fleet."
+          hint="Format: AB02TH1234 (2 letters, 2 digits, 2 letters, 4 digits). Must be unique."
           {...register('registrationNumber')}
         />
         <div className="grid grid-cols-2 gap-4">
@@ -114,13 +132,23 @@ export function VehicleForm({ open, onClose, vehicle }: { open: boolean; onClose
             {...register('capacityKg')}
           />
         </div>
-        <Input
-          label="Odometer (km)"
-          type="number"
-          placeholder="0"
-          error={errors.odometerKm?.message}
-          {...register('odometerKm')}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="Odometer (km)"
+            type="number"
+            placeholder="0"
+            hint="0 – 10,000,000"
+            error={errors.odometerKm?.message}
+            {...register('odometerKm')}
+          />
+          <Input
+            label="Vehicle Cost (₹)"
+            type="number"
+            placeholder="620000"
+            error={errors.acquisitionCost?.message}
+            {...register('acquisitionCost')}
+          />
+        </div>
       </form>
     </Modal>
   );
