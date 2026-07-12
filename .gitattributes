@@ -1,0 +1,11 @@
+# Force LF for files that run inside Linux containers, regardless of the
+# checkout platform's core.autocrlf setting. Without this, Windows checkouts
+# convert shell script line endings to CRLF, which breaks the shebang line
+# (`#!/bin/sh\r` is not a valid interpreter path) and containers fail with
+# "exec ./script.sh: no such file or directory".
+* text=auto eol=lf
+
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+docker-entrypoint.sh text eol=lf
