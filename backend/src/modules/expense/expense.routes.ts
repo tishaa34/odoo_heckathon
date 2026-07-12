@@ -9,7 +9,7 @@ import { asyncHandler } from '../../utils/asyncHandler';
 
 const router = Router();
 
-const manage = authorize(Role.FLEET_MANAGER, Role.FINANCIAL_ANALYST);
+const manage = authorize(Role.FLEET_MANAGER, Role.FINANCIAL_ANALYST, Role.DRIVER);
 
 router.use(authenticate);
 

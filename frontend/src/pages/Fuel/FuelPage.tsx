@@ -5,6 +5,7 @@ import { useCosts } from '@/hooks/useAnalytics';
 import { useVehicles } from '@/hooks/useVehicles';
 import { useListControls } from '@/hooks/useListControls';
 import { useCanWrite } from '@/components/common/RoleGate';
+import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/components/common/Misc';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -20,8 +21,11 @@ import { exportToCsv } from '@/utils/csv';
 import type { Expense, FuelLog } from '@/types';
 
 export default function FuelPage() {
+  const { user } = useAuth();
   const canWrite = useCanWrite('fuel');
   const canExpense = useCanWrite('expenses');
+  // Cost breakdown (maintenance / total operational) is finance-only.
+  const showFinancials = user?.role === 'FLEET_MANAGER' || user?.role === 'FINANCIAL_ANALYST';
   const [tab, setTab] = useState<'fuel' | 'expenses'>('fuel');
   const [fuelModal, setFuelModal] = useState(false);
   const [expenseModal, setExpenseModal] = useState(false);
@@ -71,9 +75,15 @@ export default function FuelPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className={`grid grid-cols-2 gap-3 ${showFinancials ? 'md:grid-cols-4' : ''}`}>
         <KpiCard label="Fuel Cost" value={currency(costs?.fuelCost ?? 0)} icon={FuelIcon} tone="blue" />
         <KpiCard label="Fuel Consumed" value={`${number(costs?.fuelLiters ?? 0)} L`} icon={FuelIcon} tone="green" />
+        {showFinancials && (
+          <>
+            <KpiCard label="Maintenance" value={currency(costs?.maintenanceCost ?? 0)} icon={Receipt} tone="orange" />
+            <KpiCard label="Total Op. Cost" value={currency(costs?.totalOperationalCost ?? 0)} icon={Receipt} tone="yellow" hint="Fuel + Maintenance + Expenses" />
+          </>
+        )}
       </div>
 
       <Card className="mt-4">

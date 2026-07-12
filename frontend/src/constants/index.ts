@@ -57,7 +57,7 @@ export const WRITE_ACCESS: Record<string, Role[]> = {
   trips: ['FLEET_MANAGER', 'DRIVER'],
   maintenance: ['FLEET_MANAGER', 'SAFETY_OFFICER'],
   fuel: ['FLEET_MANAGER', 'FINANCIAL_ANALYST', 'DRIVER'],
-  expenses: ['FLEET_MANAGER', 'FINANCIAL_ANALYST'],
+  expenses: ['FLEET_MANAGER', 'FINANCIAL_ANALYST', 'DRIVER'],
 };
 
 export type StatusTone = 'green' | 'blue' | 'orange' | 'gray' | 'red' | 'yellow';
