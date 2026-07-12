@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design tokens ─────────────────────────────────────────────
+   All surface/text colors are variables so light & dark themes share
+   the exact same component classes. Status colors are fixed (spec). */
+:root,
+[data-theme='dark'] {
+  --bg: 9 11 16;
+  --surface: 17 21 30;
+  --surface-2: 24 30 42;
+  --border: 38 46 62;
+  --muted: 138 150 170;
+  --content: 232 237 245;
+  --brand: 217 119 6;
+  --brand-hover: 245 158 11;
+  --brand-soft: 60 42 12;
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg: 244 246 250;
+  --surface: 255 255 255;
+  --surface-2: 248 250 252;
+  --border: 224 229 237;
+  --muted: 100 112 133;
+  --content: 21 28 41;
+  --brand: 217 119 6;
+  --brand-hover: 180 96 4;
+  --brand-soft: 253 240 221;
+  color-scheme: light;
+}
+
+* {
+  border-color: rgb(var(--border));
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-bg text-content font-sans antialiased;
+  margin: 0;
+}
+
+/* Custom scrollbars that respect the theme. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--muted) / 0.5);
+  background-clip: content-box;
+}
+
+/* Focus-visible ring used across interactive elements. */
+.focus-ring {
+  @apply outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-border bg-surface shadow-card;
+  }
+  .input-base {
+    @apply w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-content
+      placeholder:text-muted transition-colors focus-ring
+      focus-visible:border-brand disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .label-base {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted;
+  }
+}
+
+/* Recharts: inherit theme colors for axis/legend text. */
+.recharts-cartesian-axis-tick-value,
+.recharts-legend-item-text,
+.recharts-text {
+  fill: rgb(var(--muted)) !important;
+}
+.recharts-default-tooltip {
+  background: rgb(var(--surface)) !important;
+  border: 1px solid rgb(var(--border)) !important;
+  border-radius: 0.5rem !important;
+}
