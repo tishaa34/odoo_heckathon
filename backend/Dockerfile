@@ -1,7 +1,11 @@
 # ─────────────── Stage 1: build ───────────────
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 
 WORKDIR /app
+
+# OpenSSL is required by the Prisma engines.
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install all deps (including dev) for the build.
 COPY package*.json ./
@@ -19,20 +23,23 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # ─────────────── Stage 2: runtime ───────────────
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
 
 ENV NODE_ENV=production
 WORKDIR /app
 
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/*
+
 # Run as a non-root user.
-RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
+RUN groupadd -r nodejs && useradd -r -g nodejs -m nodejs
 
 COPY package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
-# Entrypoint applies migrations + seed, then starts the server.
+# Entrypoint applies the schema + seed, then starts the server.
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh && chown -R nodejs:nodejs /app
 

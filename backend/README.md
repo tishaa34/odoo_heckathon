@@ -37,8 +37,11 @@ transactions; repositories are the only place that touch Prisma.
 
 ### Folder structure (feature-modular)
 
+The backend lives in `backend/`; `docker-compose.yml` sits at the repository root.
+
 ```
-src/
+backend/
+├── src/
 ├── modules/                     # one self-contained folder per domain
 │   ├── auth/        (controller · service · routes · validator)
 │   ├── vehicle/     (+ repository)
@@ -97,7 +100,7 @@ All routes require authentication; mutations additionally require an authorized 
 ### Option A — Docker (recommended, one command)
 
 ```bash
-cp .env.example .env        # optional: tweak secrets
+# run from the repository root (where docker-compose.yml lives)
 docker compose up --build
 ```
 
@@ -107,6 +110,7 @@ This starts PostgreSQL, applies the schema, seeds demo data, and starts the API 
 ### Option B — Local development
 
 ```bash
+cd backend
 cp .env.example .env        # point DATABASE_URL at your local Postgres
 npm install
 npm run prisma:generate
