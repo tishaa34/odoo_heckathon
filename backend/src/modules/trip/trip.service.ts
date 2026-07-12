@@ -4,12 +4,7 @@ import { ApiError } from '../../utils/ApiError';
 import { recordAudit } from '../../utils/audit';
 import { AUDIT_ACTIONS } from '../../constants';
 import { buildOrderBy, buildPaginationMeta, PaginationParams } from '../../utils/pagination';
-import {
-  assertCapacity,
-  assertDispatchAllowed,
-  assertTransitionAllowed,
-  tripHoldsResources,
-} from './trip.rules';
+import { assertDispatchAllowed, assertTransitionAllowed, tripHoldsResources } from './trip.rules';
 
 const SORTABLE = ['origin', 'destination', 'status', 'scheduledAt', 'createdAt'];
 const TRIP_INCLUDE = {
@@ -44,20 +39,22 @@ function writeHistory(
 
 export const tripService = {
   /**
-   * Creates a trip in PENDING state. Validates that the referenced vehicle and
-   * driver exist and that cargo fits — but does NOT reserve them yet (that
-   * happens at dispatch, so a pending trip never blocks resources).
+   * Creates a trip and immediately dispatches it: runs the full rule gate
+   * (capacity, vehicle/driver eligibility, license expiry) and, atomically,
+   * creates the Trip as DISPATCHED while flipping Vehicle→ON_TRIP and
+   * Driver→ON_TRIP. Re-reading vehicle/driver inside the transaction prevents
+   * double-assignment races between concurrent trip creations.
    */
   async create(input: CreateTripInput, actorId: string) {
-    const [vehicle, driver] = await Promise.all([
-      prisma.vehicle.findUnique({ where: { id: input.vehicleId } }),
-      prisma.driver.findUnique({ where: { id: input.driverId } }),
-    ]);
-    if (!vehicle) throw ApiError.notFound('Vehicle not found.');
-    if (!driver) throw ApiError.notFound('Driver not found.');
-    assertCapacity(input.cargoWeightKg, vehicle);
-
     const trip = await prisma.$transaction(async (tx) => {
+      const [vehicle, driver] = await Promise.all([
+        tx.vehicle.findUnique({ where: { id: input.vehicleId } }),
+        tx.driver.findUnique({ where: { id: input.driverId } }),
+      ]);
+      if (!vehicle) throw ApiError.notFound('Vehicle not found.');
+      if (!driver) throw ApiError.notFound('Driver not found.');
+      assertDispatchAllowed(vehicle, driver, input.cargoWeightKg);
+
       const created = await tx.trip.create({
         data: {
           vehicleId: input.vehicleId,
@@ -69,11 +66,15 @@ export const tripService = {
           distanceKm: input.distanceKm != null ? new Prisma.Decimal(input.distanceKm) : null,
           revenue: input.revenue != null ? new Prisma.Decimal(input.revenue) : new Prisma.Decimal(0),
           createdById: actorId,
-          status: TripStatus.PENDING,
+          status: TripStatus.DISPATCHED,
         },
         include: TRIP_INCLUDE,
       });
-      await writeHistory(tx, created.id, null, TripStatus.PENDING, actorId, 'Trip created');
+
+      await tx.vehicle.update({ where: { id: vehicle.id }, data: { status: VehicleStatus.ON_TRIP } });
+      await tx.driver.update({ where: { id: driver.id }, data: { status: DriverStatus.ON_TRIP } });
+
+      await writeHistory(tx, created.id, null, TripStatus.DISPATCHED, actorId, 'Trip created & dispatched');
       await recordAudit(
         { userId: actorId, action: AUDIT_ACTIONS.CREATE, entity: 'Trip', entityId: created.id },
         tx
@@ -81,43 +82,6 @@ export const tripService = {
       return created;
     });
     return trip;
-  },
-
-  /**
-   * DISPATCH — the heart of the platform. Runs the full rule gate and, atomically,
-   * flips Trip→DISPATCHED, Vehicle→ON_TRIP, Driver→ON_TRIP. The transaction plus
-   * re-reads inside it prevent double-assignment races.
-   */
-  async dispatch(tripId: string, actorId: string) {
-    return prisma.$transaction(async (tx) => {
-      const trip = await tx.trip.findUnique({ where: { id: tripId } });
-      if (!trip) throw ApiError.notFound('Trip not found.');
-      assertTransitionAllowed('dispatch', trip.status);
-
-      // Re-read the latest vehicle & driver state inside the transaction.
-      const [vehicle, driver] = await Promise.all([
-        tx.vehicle.findUnique({ where: { id: trip.vehicleId } }),
-        tx.driver.findUnique({ where: { id: trip.driverId } }),
-      ]);
-      if (!vehicle) throw ApiError.notFound('Vehicle not found.');
-      if (!driver) throw ApiError.notFound('Driver not found.');
-
-      assertDispatchAllowed(vehicle, driver, trip.cargoWeightKg.toNumber());
-
-      await tx.vehicle.update({ where: { id: vehicle.id }, data: { status: VehicleStatus.ON_TRIP } });
-      await tx.driver.update({ where: { id: driver.id }, data: { status: DriverStatus.ON_TRIP } });
-      const updated = await tx.trip.update({
-        where: { id: tripId },
-        data: { status: TripStatus.DISPATCHED },
-        include: TRIP_INCLUDE,
-      });
-      await writeHistory(tx, tripId, trip.status, TripStatus.DISPATCHED, actorId, 'Dispatched');
-      await recordAudit(
-        { userId: actorId, action: AUDIT_ACTIONS.DISPATCH, entity: 'Trip', entityId: tripId },
-        tx
-      );
-      return updated;
-    });
   },
 
   /** START — DISPATCHED → IN_PROGRESS (records departure). */

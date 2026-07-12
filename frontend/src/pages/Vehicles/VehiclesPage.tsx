@@ -119,7 +119,7 @@ export default function VehiclesPage() {
         }
       />
 
-      <InfoBanner>Registration numbers are unique. Retired / In-Shop vehicles are automatically hidden from the Trip Dispatcher.</InfoBanner>
+      <InfoBanner>Registration numbers are unique. Retired / In-Shop / On-Trip vehicles are automatically hidden from trip creation.</InfoBanner>
 
       <Card className="mt-4">
         <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center">

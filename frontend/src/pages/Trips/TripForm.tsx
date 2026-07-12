@@ -77,7 +77,7 @@ export function TripForm() {
 
   return (
     <Card>
-      <CardHeader title="Create Trip" subtitle="Drafts start as Pending — dispatch when ready." />
+      <CardHeader title="Create Trip" subtitle="Vehicle and driver are reserved (On Trip) immediately on creation." />
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-5" noValidate>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input label="Source" placeholder="Gandhinagar Depot" required error={errors.origin?.message} {...register('origin')} />
@@ -134,7 +134,7 @@ export function TripForm() {
 
         <Button type="submit" fullWidth loading={isSubmitting} disabled={overCapacity}>
           <PackagePlus className="h-4 w-4" />
-          {overCapacity ? 'Capacity exceeded' : 'Create Trip (Draft)'}
+          {overCapacity ? 'Capacity exceeded' : 'Create & Dispatch Trip'}
         </Button>
       </form>
     </Card>

@@ -28,7 +28,7 @@ async function seedUsers() {
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, SALT);
   const users = [
     { name: 'Fiona Fleet', email: 'manager@transitops.com', role: Role.FLEET_MANAGER },
-    { name: 'Dan Dispatch', email: 'dispatcher@transitops.com', role: Role.DISPATCHER },
+    { name: 'Dave Driver', email: 'driver@transitops.com', role: Role.DRIVER },
     { name: 'Sam Safety', email: 'safety@transitops.com', role: Role.SAFETY_OFFICER },
     { name: 'Fay Finance', email: 'finance@transitops.com', role: Role.FINANCIAL_ANALYST },
   ];
@@ -120,8 +120,7 @@ async function seedOperations() {
       createdById: manager.id,
       history: {
         create: [
-          { toStatus: TripStatus.PENDING, changedById: manager.id, reason: 'Trip created' },
-          { fromStatus: TripStatus.PENDING, toStatus: TripStatus.DISPATCHED, changedById: manager.id, reason: 'Dispatched' },
+          { toStatus: TripStatus.DISPATCHED, changedById: manager.id, reason: 'Trip created & dispatched' },
           { fromStatus: TripStatus.DISPATCHED, toStatus: TripStatus.IN_PROGRESS, changedById: manager.id, reason: 'Started' },
           { fromStatus: TripStatus.IN_PROGRESS, toStatus: TripStatus.COMPLETED, changedById: manager.id, reason: 'Completed' },
         ],
@@ -129,7 +128,8 @@ async function seedOperations() {
     },
   });
 
-  // A pending trip ready to be dispatched during the demo.
+  // A live dispatched trip — vehicle & driver are reserved (On Trip), demonstrating
+  // that both are hidden from the trip-creation pool until this trip completes.
   await prisma.trip.create({
     data: {
       vehicleId: v[1].id,
@@ -139,11 +139,13 @@ async function seedOperations() {
       cargoWeightKg: dec(12000),
       distanceKm: dec(280),
       revenue: dec(60000),
-      status: TripStatus.PENDING,
+      status: TripStatus.DISPATCHED,
       createdById: manager.id,
-      history: { create: [{ toStatus: TripStatus.PENDING, changedById: manager.id, reason: 'Trip created' }] },
+      history: { create: [{ toStatus: TripStatus.DISPATCHED, changedById: manager.id, reason: 'Trip created & dispatched' }] },
     },
   });
+  await prisma.vehicle.update({ where: { id: v[1].id }, data: { status: VehicleStatus.ON_TRIP } });
+  await prisma.driver.update({ where: { id: d[1].id }, data: { status: DriverStatus.ON_TRIP } });
 
   // Maintenance: one closed (history) + one open on the in-shop vehicle.
   const inShop = v.find((x) => x.status === VehicleStatus.IN_SHOP)!;

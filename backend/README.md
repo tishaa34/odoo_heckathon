@@ -11,10 +11,10 @@ Built with **Node.js · Express · TypeScript · PostgreSQL · Prisma · JWT · 
 
 ## ✨ Highlights
 
-- **Workflow engine, not CRUD** — a guarded trip state machine (`PENDING → DISPATCHED → IN_PROGRESS → COMPLETED / CANCELLED`) runs inside database transactions to prevent double-assignment and race conditions.
-- **Automatic status coupling** — dispatch flips vehicle & driver to `ON_TRIP`; completion/cancellation frees them; opening maintenance moves a vehicle to `IN_SHOP` and removes it from dispatch.
+- **Workflow engine, not CRUD** — a guarded trip state machine (`DISPATCHED → IN_PROGRESS → COMPLETED / CANCELLED`) runs inside database transactions to prevent double-assignment and race conditions. Creating a trip runs the full eligibility gate and dispatches it in the same atomic step — there is no separate manual "dispatch" action.
+- **Automatic status coupling** — creating a trip immediately flips vehicle & driver to `ON_TRIP`; completion/cancellation frees them; opening maintenance moves a vehicle to `IN_SHOP` and removes it from the trip-creation pool.
 - **Every business rule enforced** — retired/in-shop vehicles, expired licenses, suspended/off-duty drivers, and cargo-over-capacity are all rejected with clear `422` messages.
-- **Real RBAC** — 4 roles (`FLEET_MANAGER`, `DISPATCHER`, `SAFETY_OFFICER`, `FINANCIAL_ANALYST`) enforced by middleware on every route.
+- **Real RBAC** — 4 roles (`FLEET_MANAGER`, `DRIVER`, `SAFETY_OFFICER`, `FINANCIAL_ANALYST`) enforced by middleware on every route.
 - **Analytics engine** — fleet utilization, vehicle ROI, fuel efficiency, operational cost and driver utilization computed live from records.
 - **Production concerns** — access + rotating refresh tokens, bcrypt, helmet, CORS, rate limiting, Zod validation, Winston logging with request ids, centralized error handling, and a full **audit trail**.
 - **One-command startup** — `docker compose up --build` provisions Postgres, applies the schema, seeds demo data and starts the API.
@@ -46,7 +46,7 @@ backend/
 │   ├── auth/        (controller · service · routes · validator)
 │   ├── vehicle/     (+ repository)
 │   ├── driver/      (+ repository)
-│   ├── trip/        (service = dispatch state machine, rules = pure & unit-tested)
+│   ├── trip/        (service = create-and-dispatch state machine, rules = pure & unit-tested)
 │   ├── maintenance/ · fuel/ · expense/ · analytics/
 ├── middlewares/     # authenticate, authorize, validate, errorHandler, rateLimiter, requestId
 ├── config/          # env (zod-validated), logger, prisma, swagger, openapi
@@ -69,7 +69,7 @@ filter/lookup columns, enums for state, and `Decimal` for money/weight.
 | `User` / `RefreshToken` | Auth & rotating refresh tokens |
 | `Vehicle` | Fleet master data + `VehicleStatus` |
 | `Driver` | Drivers + license + `DriverStatus` |
-| `Trip` | Dispatch workflow + `TripStatus` |
+| `Trip` | Create-and-dispatch workflow + `TripStatus` |
 | `TripStatusHistory` | Immutable audit of every transition |
 | `MaintenanceLog` | Maintenance, coupled to vehicle status |
 | `FuelLog` / `Expense` | Cost tracking |
@@ -80,12 +80,12 @@ filter/lookup columns, enums for state, and `Decimal` for money/weight.
 
 ## 🔐 Roles & Permissions (RBAC)
 
-| Resource | FLEET_MANAGER | DISPATCHER | SAFETY_OFFICER | FINANCIAL_ANALYST |
+| Resource | FLEET_MANAGER | DRIVER | SAFETY_OFFICER | FINANCIAL_ANALYST |
 |---|:--:|:--:|:--:|:--:|
 | Users (register) | ✅ | — | — | — |
 | Vehicles (write) | ✅ | read | read | read |
 | Drivers (write) | ✅ | read | ✅ | read |
-| Trips / dispatch | ✅ | ✅ | read | read |
+| Trips (create & dispatch) | ✅ | ✅ | read | read |
 | Maintenance | ✅ | — | ✅ | — |
 | Fuel | ✅ | ✅ | — | ✅ |
 | Expenses | ✅ | — | — | ✅ |
@@ -128,7 +128,7 @@ All demo users share the password **`Password123!`**.
 | Role | Email |
 |---|---|
 | Fleet Manager | `manager@transitops.com` |
-| Dispatcher | `dispatcher@transitops.com` |
+| Driver | `driver@transitops.com` |
 | Safety Officer | `safety@transitops.com` |
 | Financial Analyst | `finance@transitops.com` |
 
@@ -146,7 +146,7 @@ Base path: `/api/v1` · Consistent envelope: `{ success, message, data, meta? }`
 | Auth | `POST /auth/login` · `/auth/refresh` · `/auth/logout` · `/auth/register` · `GET /auth/me` |
 | Vehicles | `GET/POST /vehicles` · `GET/PATCH/DELETE /vehicles/:id` · `POST /vehicles/:id/retire` |
 | Drivers | `GET/POST /drivers` · `GET/PATCH/DELETE /drivers/:id` |
-| Trips | `GET/POST /trips` · `GET /trips/:id` · `/trips/:id/history` · `POST /trips/:id/{dispatch,start,complete,cancel}` |
+| Trips | `GET/POST /trips` (create = dispatch) · `GET /trips/:id` · `/trips/:id/history` · `POST /trips/:id/{start,complete,cancel}` |
 | Maintenance | `GET/POST /maintenance` · `PATCH /maintenance/:id/close` |
 | Fuel / Expenses | `GET/POST /fuel` · `GET/POST /expenses` |
 | Analytics | `GET /analytics/{dashboard,fleet-utilization,costs,drivers}` · `/analytics/vehicle/:id/roi` |
@@ -154,17 +154,20 @@ Base path: `/api/v1` · Consistent envelope: `{ success, message, data, meta? }`
 List endpoints support `?page&limit&sort&order&search&status`. Full request/response/error
 schemas are in **Swagger UI** at `/api/v1/docs`.
 
-### Example: end-to-end dispatch
+### Example: end-to-end trip
 
 ```bash
-# 1) Login as dispatcher
+# 1) Login as a driver
 TOKEN=$(curl -s localhost:4000/api/v1/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"dispatcher@transitops.com","password":"Password123!"}' \
+  -d '{"email":"driver@transitops.com","password":"Password123!"}' \
   | jq -r .data.accessToken)
 
-# 2) Create a trip, then dispatch it (vehicle + driver flip to ON_TRIP)
-curl -s -X POST localhost:4000/api/v1/trips/<TRIP_ID>/dispatch -H "Authorization: Bearer $TOKEN"
+# 2) Create a trip — this validates eligibility and dispatches it in one step
+#    (vehicle + driver flip to ON_TRIP immediately, trip is created as DISPATCHED)
+curl -s -X POST localhost:4000/api/v1/trips -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"vehicleId":"<VEHICLE_ID>","driverId":"<DRIVER_ID>","origin":"Ahmedabad","destination":"Surat","cargoWeightKg":5000}'
 
 # 3) Complete it (vehicle + driver return to AVAILABLE)
 curl -s -X POST localhost:4000/api/v1/trips/<TRIP_ID>/complete -H "Authorization: Bearer $TOKEN"
@@ -186,12 +189,12 @@ state machine, and resource release on cancel (the exact scenarios judges care a
 ## 🛡️ Business Rules Enforced
 
 - Registration numbers and license numbers are unique.
-- Retired / in-shop / already-on-trip vehicles cannot be dispatched.
-- Suspended / off-duty / already-on-trip drivers, and expired licenses, cannot be dispatched.
+- Retired / in-shop / already-on-trip vehicles cannot be assigned to a trip.
+- Suspended / off-duty / already-on-trip drivers, and expired licenses, cannot be assigned to a trip.
 - Cargo weight can never exceed vehicle capacity.
-- Dispatch → vehicle & driver `ON_TRIP`; complete/cancel → back to `AVAILABLE`.
+- Creating a trip → vehicle & driver `ON_TRIP` immediately; complete/cancel → back to `AVAILABLE`.
 - Opening maintenance → vehicle `IN_SHOP`; closing → `AVAILABLE`.
-- Illegal state transitions (e.g. completing a pending trip) are rejected.
+- Illegal state transitions (e.g. completing an already-completed trip) are rejected.
 - All mutations run in transactions and write an audit-log entry.
 
 ---

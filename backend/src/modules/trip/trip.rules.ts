@@ -80,12 +80,15 @@ export function assertDispatchAllowed(
   assertCapacity(cargoWeightKg, vehicle);
 }
 
-/** Allowed source states for each trip transition (state machine definition). */
+/**
+ * Allowed source states for each trip transition (state machine definition).
+ * Trips are created already DISPATCHED (see trip.service.ts `create`) — there
+ * is no separate dispatch step, so PENDING never occurs as a live trip state.
+ */
 const TRANSITIONS: Record<string, TripStatus[]> = {
-  dispatch: [TripStatus.PENDING],
   start: [TripStatus.DISPATCHED],
   complete: [TripStatus.DISPATCHED, TripStatus.IN_PROGRESS],
-  cancel: [TripStatus.PENDING, TripStatus.DISPATCHED, TripStatus.IN_PROGRESS],
+  cancel: [TripStatus.DISPATCHED, TripStatus.IN_PROGRESS],
 };
 
 /** Guards illegal state jumps (e.g. completing a PENDING trip). */

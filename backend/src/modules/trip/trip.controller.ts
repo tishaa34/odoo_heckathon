@@ -32,11 +32,6 @@ export const tripController = {
     return sendSuccess(res, history, 'Trip history fetched successfully.');
   },
 
-  async dispatch(req: Request, res: Response) {
-    const trip = await tripService.dispatch(req.params.id, req.user!.id);
-    return sendSuccess(res, trip, 'Trip dispatched successfully.');
-  },
-
   async start(req: Request, res: Response) {
     const trip = await tripService.start(req.params.id, req.user!.id);
     return sendSuccess(res, trip, 'Trip started successfully.');

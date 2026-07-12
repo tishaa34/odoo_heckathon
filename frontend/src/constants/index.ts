@@ -11,7 +11,7 @@ export const TOKEN_KEYS = {
 
 export const ROLE_LABELS: Record<Role, string> = {
   FLEET_MANAGER: 'Fleet Manager',
-  DISPATCHER: 'Dispatcher',
+  DRIVER: 'Driver',
   SAFETY_OFFICER: 'Safety Officer',
   FINANCIAL_ANALYST: 'Financial Analyst',
 };
@@ -29,15 +29,15 @@ export interface NavItem {
   roles: Role[];
 }
 
-const ALL: Role[] = ['FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'];
+const ALL: Role[] = ['FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST'];
 
 export const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard', roles: ALL },
-  { to: '/vehicles', label: 'Fleet', icon: 'Truck', roles: ['FLEET_MANAGER', 'DISPATCHER', 'FINANCIAL_ANALYST'] },
+  { to: '/vehicles', label: 'Fleet', icon: 'Truck', roles: ['FLEET_MANAGER', 'DRIVER', 'FINANCIAL_ANALYST'] },
   { to: '/drivers', label: 'Drivers', icon: 'Users', roles: ['FLEET_MANAGER', 'SAFETY_OFFICER'] },
-  { to: '/trips', label: 'Trips', icon: 'Route', roles: ['FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER'] },
+  { to: '/trips', label: 'Trips', icon: 'Route', roles: ['FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER'] },
   { to: '/maintenance', label: 'Maintenance', icon: 'Wrench', roles: ['FLEET_MANAGER', 'SAFETY_OFFICER'] },
-  { to: '/fuel', label: 'Fuel & Expenses', icon: 'Fuel', roles: ['FLEET_MANAGER', 'FINANCIAL_ANALYST', 'DISPATCHER'] },
+  { to: '/fuel', label: 'Fuel & Expenses', icon: 'Fuel', roles: ['FLEET_MANAGER', 'FINANCIAL_ANALYST', 'DRIVER'] },
   { to: '/analytics', label: 'Analytics', icon: 'BarChart3', roles: ['FLEET_MANAGER', 'FINANCIAL_ANALYST'] },
   { to: '/settings', label: 'Settings', icon: 'Settings', roles: ALL },
 ];
@@ -45,7 +45,7 @@ export const NAV_ITEMS: NavItem[] = [
 // Landing route per role after login (first page they are allowed to see).
 export const ROLE_HOME: Record<Role, string> = {
   FLEET_MANAGER: '/dashboard',
-  DISPATCHER: '/dashboard',
+  DRIVER: '/dashboard',
   SAFETY_OFFICER: '/dashboard',
   FINANCIAL_ANALYST: '/dashboard',
 };
@@ -54,9 +54,9 @@ export const ROLE_HOME: Record<Role, string> = {
 export const WRITE_ACCESS: Record<string, Role[]> = {
   vehicles: ['FLEET_MANAGER'],
   drivers: ['FLEET_MANAGER', 'SAFETY_OFFICER'],
-  trips: ['FLEET_MANAGER', 'DISPATCHER'],
+  trips: ['FLEET_MANAGER', 'DRIVER'],
   maintenance: ['FLEET_MANAGER', 'SAFETY_OFFICER'],
-  fuel: ['FLEET_MANAGER', 'FINANCIAL_ANALYST', 'DISPATCHER'],
+  fuel: ['FLEET_MANAGER', 'FINANCIAL_ANALYST', 'DRIVER'],
   expenses: ['FLEET_MANAGER', 'FINANCIAL_ANALYST'],
 };
 

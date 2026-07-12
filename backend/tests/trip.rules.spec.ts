@@ -107,12 +107,12 @@ describe('Full dispatch gate', () => {
 });
 
 describe('Trip state machine transitions', () => {
-  it('allows dispatch only from PENDING', () => {
-    expect(() => assertTransitionAllowed('dispatch', TripStatus.PENDING)).not.toThrow();
-    expect(() => assertTransitionAllowed('dispatch', TripStatus.COMPLETED)).toThrow(/Cannot dispatch/i);
+  it('allows starting only from DISPATCHED (trips are created already DISPATCHED)', () => {
+    expect(() => assertTransitionAllowed('start', TripStatus.DISPATCHED)).not.toThrow();
+    expect(() => assertTransitionAllowed('start', TripStatus.COMPLETED)).toThrow(/Cannot start/i);
   });
 
-  it('allows complete from DISPATCHED or IN_PROGRESS but not PENDING', () => {
+  it('allows complete from DISPATCHED or IN_PROGRESS', () => {
     expect(() => assertTransitionAllowed('complete', TripStatus.IN_PROGRESS)).not.toThrow();
     expect(() => assertTransitionAllowed('complete', TripStatus.DISPATCHED)).not.toThrow();
     expect(() => assertTransitionAllowed('complete', TripStatus.PENDING)).toThrow(/Cannot complete/i);
@@ -129,7 +129,7 @@ describe('Resource release on cancel', () => {
     expect(tripHoldsResources(TripStatus.IN_PROGRESS)).toBe(true);
   });
 
-  it('does not release resources for a PENDING trip', () => {
+  it('does not hold resources for a PENDING trip (legacy/unreachable state)', () => {
     expect(tripHoldsResources(TripStatus.PENDING)).toBe(false);
   });
 });

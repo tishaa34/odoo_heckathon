@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Send, Play, CheckCircle2, XCircle, History, Download } from 'lucide-react';
+import { Play, CheckCircle2, XCircle, History, Download } from 'lucide-react';
 import { useTrips, useTripAction } from '@/hooks/useTrips';
 import { useListControls } from '@/hooks/useListControls';
 import { useCanWrite } from '@/components/common/RoleGate';
@@ -21,7 +21,6 @@ import type { Trip } from '@/types';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
-  { value: 'PENDING', label: 'Pending' },
   { value: 'DISPATCHED', label: 'Dispatched' },
   { value: 'IN_PROGRESS', label: 'In Progress' },
   { value: 'COMPLETED', label: 'Completed' },
@@ -38,7 +37,7 @@ export default function TripsPage() {
   const [cancelTrip, setCancelTrip] = useState<Trip | null>(null);
   const [cancelReason, setCancelReason] = useState('');
 
-  const run = (id: string, act: 'dispatch' | 'start' | 'complete') => action.mutate({ id, action: act });
+  const run = (id: string, act: 'start' | 'complete') => action.mutate({ id, action: act });
 
   const doCancel = async () => {
     if (!cancelTrip) return;
@@ -52,11 +51,6 @@ export default function TripsPage() {
     const btn = 'inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors disabled:opacity-40';
     return (
       <div className="flex items-center justify-end gap-1">
-        {trip.status === 'PENDING' && (
-          <button onClick={() => run(trip.id, 'dispatch')} disabled={busy} className={`${btn} bg-status-ontrip/15 text-status-ontrip hover:bg-status-ontrip/25`}>
-            <Send className="h-3.5 w-3.5" /> Dispatch
-          </button>
-        )}
         {trip.status === 'DISPATCHED' && (
           <button onClick={() => run(trip.id, 'start')} disabled={busy} className={`${btn} bg-status-ontrip/15 text-status-ontrip hover:bg-status-ontrip/25`}>
             <Play className="h-3.5 w-3.5" /> Start
@@ -67,7 +61,7 @@ export default function TripsPage() {
             <CheckCircle2 className="h-3.5 w-3.5" /> Complete
           </button>
         )}
-        {['PENDING', 'DISPATCHED', 'IN_PROGRESS'].includes(trip.status) && (
+        {['DISPATCHED', 'IN_PROGRESS'].includes(trip.status) && (
           <button onClick={() => setCancelTrip(trip)} disabled={busy} className={`${btn} text-muted hover:bg-surface-2 hover:text-status-suspended`}>
             <XCircle className="h-3.5 w-3.5" /> Cancel
           </button>
@@ -103,8 +97,8 @@ export default function TripsPage() {
   return (
     <div>
       <PageHeader
-        title="Trip Dispatcher"
-        subtitle="Create, dispatch and track trips through their full lifecycle."
+        title="Trips"
+        subtitle="Create a trip to reserve a vehicle and driver instantly, then track it through to completion."
         actions={
           <Button variant="outline" onClick={() => exportToCsv('trips', [
             { key: 'origin', header: 'Origin' },
@@ -132,9 +126,9 @@ export default function TripsPage() {
         ) : (
           <div className="lg:col-span-1">
             <Card>
-              <CardHeader title="Trip Dispatcher" />
+              <CardHeader title="Trips" />
               <div className="p-5">
-                <InfoBanner>You have read-only access to trips. Dispatching is limited to Dispatchers and Fleet Managers.</InfoBanner>
+                <InfoBanner>You have read-only access to trips. Creating trips is limited to Drivers and Fleet Managers.</InfoBanner>
               </div>
             </Card>
           </div>

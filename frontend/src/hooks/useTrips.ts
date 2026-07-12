@@ -36,20 +36,18 @@ export function useCreateTrip() {
     mutationFn: (body: TripInput) => tripsApi.create(body),
     onSuccess: () => {
       invalidate();
-      toastSuccess('Trip drafted. Ready to dispatch.');
+      toastSuccess('Trip created & dispatched — vehicle and driver reserved.');
     },
     onError: (e) => toastError(e),
   });
 }
 
-/** Generic lifecycle action hook (dispatch / start / complete / cancel). */
+/** Generic lifecycle action hook (start / complete / cancel). */
 export function useTripAction() {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: ({ id, action, reason }: { id: string; action: 'dispatch' | 'start' | 'complete' | 'cancel'; reason?: string }) => {
+    mutationFn: ({ id, action, reason }: { id: string; action: 'start' | 'complete' | 'cancel'; reason?: string }) => {
       switch (action) {
-        case 'dispatch':
-          return tripsApi.dispatch(id);
         case 'start':
           return tripsApi.start(id);
         case 'complete':
@@ -60,7 +58,7 @@ export function useTripAction() {
     },
     onSuccess: (_data, vars) => {
       invalidate();
-      const verb = { dispatch: 'dispatched', start: 'started', complete: 'completed', cancel: 'cancelled' }[vars.action];
+      const verb = { start: 'started', complete: 'completed', cancel: 'cancelled' }[vars.action];
       toastSuccess(`Trip ${verb}.`);
     },
     onError: (e) => toastError(e),

@@ -36,8 +36,8 @@ describe('LoginPage', () => {
   it('populates fields from a demo account shortcut', async () => {
     const user = userEvent.setup();
     renderLogin();
-    await user.click(screen.getByText('dispatcher@transitops.com'));
+    await user.click(screen.getByText('driver@transitops.com'));
     const email = screen.getByLabelText(/email/i) as HTMLInputElement;
-    expect(email.value).toBe('dispatcher@transitops.com');
+    expect(email.value).toBe('driver@transitops.com');
   });
 });

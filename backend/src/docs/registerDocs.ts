@@ -214,7 +214,7 @@ export function registerDocs(): void {
     method: 'post',
     path: '/trips',
     tags: ['Trips'],
-    summary: 'Create a PENDING trip (Dispatcher)',
+    summary: 'Create & dispatch a trip (Driver) — reserves the vehicle and driver immediately',
     security: bearer,
     request: { body: json(createTripSchema.shape.body) },
     responses: { 201: ok(successEnvelope(genericObject)), ...commonErrors },
@@ -237,7 +237,7 @@ export function registerDocs(): void {
     request: { params: idParam },
     responses: { 200: ok(successEnvelope(z.array(genericObject))), ...commonErrors },
   });
-  for (const action of ['dispatch', 'start', 'complete'] as const) {
+  for (const action of ['start', 'complete'] as const) {
     registry.registerPath({
       method: 'post',
       path: `/trips/{id}/${action}`,

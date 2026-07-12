@@ -9,8 +9,8 @@ import { asyncHandler } from '../../utils/asyncHandler';
 
 const router = Router();
 
-// Financial Analysts and Fleet Managers record fuel; Dispatchers may also log en-route fills.
-const manage = authorize(Role.FLEET_MANAGER, Role.FINANCIAL_ANALYST, Role.DISPATCHER);
+// Financial Analysts and Fleet Managers record fuel; Drivers may also log en-route fills.
+const manage = authorize(Role.FLEET_MANAGER, Role.FINANCIAL_ANALYST, Role.DRIVER);
 
 router.use(authenticate);
 

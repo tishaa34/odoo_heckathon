@@ -19,7 +19,7 @@ type FormValues = z.infer<typeof schema>;
 
 const DEMO: { role: Role; email: string }[] = [
   { role: 'FLEET_MANAGER', email: 'manager@transitops.com' },
-  { role: 'DISPATCHER', email: 'dispatcher@transitops.com' },
+  { role: 'DRIVER', email: 'driver@transitops.com' },
   { role: 'SAFETY_OFFICER', email: 'safety@transitops.com' },
   { role: 'FINANCIAL_ANALYST', email: 'finance@transitops.com' },
 ];
@@ -89,7 +89,7 @@ export default function LoginPage() {
           <ul className="mt-8 space-y-3 text-sm">
             {[
               ['Fleet Manager', 'Fleet, drivers & full oversight'],
-              ['Dispatcher', 'Dashboard & trip dispatching'],
+              ['Driver', 'Create trips & dispatch vehicles'],
               ['Safety Officer', 'Drivers & maintenance compliance'],
               ['Financial Analyst', 'Fuel, expenses & analytics'],
             ].map(([role, desc]) => (

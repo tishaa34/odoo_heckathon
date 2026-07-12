@@ -100,7 +100,6 @@ export const tripsApi = {
   get: (id: string) => unwrap<Trip>(http.get(`/trips/${id}`)),
   history: (id: string) => unwrap<TripHistoryEntry[]>(http.get(`/trips/${id}/history`)),
   create: (body: TripInput) => unwrap<Trip>(http.post('/trips', body)),
-  dispatch: (id: string) => unwrap<Trip>(http.post(`/trips/${id}/dispatch`)),
   start: (id: string) => unwrap<Trip>(http.post(`/trips/${id}/start`)),
   complete: (id: string) => unwrap<Trip>(http.post(`/trips/${id}/complete`)),
   cancel: (id: string, reason?: string) => unwrap<Trip>(http.post(`/trips/${id}/cancel`, { reason })),

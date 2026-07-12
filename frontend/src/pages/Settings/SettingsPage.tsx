@@ -15,7 +15,7 @@ type Access = 'full' | 'view' | 'none';
 const MODULES = ['Fleet', 'Drivers', 'Trips', 'Fuel/Exp.', 'Analytics'] as const;
 const RBAC_MATRIX: Record<Role, Record<(typeof MODULES)[number], Access>> = {
   FLEET_MANAGER: { Fleet: 'full', Drivers: 'full', Trips: 'full', 'Fuel/Exp.': 'full', Analytics: 'full' },
-  DISPATCHER: { Fleet: 'view', Drivers: 'none', Trips: 'full', 'Fuel/Exp.': 'full', Analytics: 'none' },
+  DRIVER: { Fleet: 'view', Drivers: 'none', Trips: 'full', 'Fuel/Exp.': 'full', Analytics: 'none' },
   SAFETY_OFFICER: { Fleet: 'none', Drivers: 'full', Trips: 'view', 'Fuel/Exp.': 'none', Analytics: 'none' },
   FINANCIAL_ANALYST: { Fleet: 'view', Drivers: 'none', Trips: 'none', 'Fuel/Exp.': 'full', Analytics: 'full' },
 };

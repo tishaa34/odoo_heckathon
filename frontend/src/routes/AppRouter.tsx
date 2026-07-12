@@ -32,19 +32,19 @@ export function AppRouter() {
           <Route path="/dashboard" element={<Lazy><DashboardPage /></Lazy>} />
           <Route path="/settings" element={<Lazy><SettingsPage /></Lazy>} />
 
-          <Route element={<ProtectedRoute roles={['FLEET_MANAGER', 'DISPATCHER', 'FINANCIAL_ANALYST']} />}>
+          <Route element={<ProtectedRoute roles={['FLEET_MANAGER', 'DRIVER', 'FINANCIAL_ANALYST']} />}>
             <Route path="/vehicles" element={<Lazy><VehiclesPage /></Lazy>} />
           </Route>
           <Route element={<ProtectedRoute roles={['FLEET_MANAGER', 'SAFETY_OFFICER']} />}>
             <Route path="/drivers" element={<Lazy><DriversPage /></Lazy>} />
           </Route>
-          <Route element={<ProtectedRoute roles={['FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER']} />}>
+          <Route element={<ProtectedRoute roles={['FLEET_MANAGER', 'DRIVER', 'SAFETY_OFFICER']} />}>
             <Route path="/trips" element={<Lazy><TripsPage /></Lazy>} />
           </Route>
           <Route element={<ProtectedRoute roles={['FLEET_MANAGER', 'SAFETY_OFFICER']} />}>
             <Route path="/maintenance" element={<Lazy><MaintenancePage /></Lazy>} />
           </Route>
-          <Route element={<ProtectedRoute roles={['FLEET_MANAGER', 'FINANCIAL_ANALYST', 'DISPATCHER']} />}>
+          <Route element={<ProtectedRoute roles={['FLEET_MANAGER', 'FINANCIAL_ANALYST', 'DRIVER']} />}>
             <Route path="/fuel" element={<Lazy><FuelPage /></Lazy>} />
           </Route>
           <Route element={<ProtectedRoute roles={['FLEET_MANAGER', 'FINANCIAL_ANALYST']} />}>

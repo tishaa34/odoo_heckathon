@@ -10,7 +10,7 @@ import { asyncHandler } from '../../utils/asyncHandler';
 const router = Router();
 
 // Analytics are read-only insights for management + finance.
-const view = authorize(Role.FLEET_MANAGER, Role.FINANCIAL_ANALYST, Role.DISPATCHER, Role.SAFETY_OFFICER);
+const view = authorize(Role.FLEET_MANAGER, Role.FINANCIAL_ANALYST, Role.DRIVER, Role.SAFETY_OFFICER);
 
 router.use(authenticate);
 

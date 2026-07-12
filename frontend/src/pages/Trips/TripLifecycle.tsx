@@ -3,7 +3,6 @@ import { cn } from '@/utils/cn';
 import type { TripStatus } from '@/types';
 
 const STAGES: { key: TripStatus; label: string }[] = [
-  { key: 'PENDING', label: 'Pending' },
   { key: 'DISPATCHED', label: 'Dispatched' },
   { key: 'IN_PROGRESS', label: 'In Progress' },
   { key: 'COMPLETED', label: 'Completed' },
