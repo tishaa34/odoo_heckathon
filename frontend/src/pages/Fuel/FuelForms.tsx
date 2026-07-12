@@ -13,6 +13,14 @@ function useVehicleOptions() {
   return (data?.items ?? []).map((v) => ({ value: v.id, label: `${v.registrationNumber} · ${v.make} ${v.model}` }));
 }
 
+/** Fuel can only be logged for vehicles that are in service (available or on a trip). */
+function useFuelableVehicleOptions() {
+  const { data } = useVehicles({ limit: 100 });
+  return (data?.items ?? [])
+    .filter((v) => v.status === 'AVAILABLE' || v.status === 'ON_TRIP')
+    .map((v) => ({ value: v.id, label: `${v.registrationNumber} · ${v.make} ${v.model}` }));
+}
+
 const fuelSchema = z.object({
   vehicleId: z.string().uuid('Select a vehicle.'),
   liters: z.coerce.number().positive('Enter litres.').max(10000),
@@ -23,7 +31,7 @@ const fuelSchema = z.object({
 type FuelValues = z.infer<typeof fuelSchema>;
 
 export function LogFuelModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const options = useVehicleOptions();
+  const options = useFuelableVehicleOptions();
   const create = useCreateFuelLog();
   const {
     register,

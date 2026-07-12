@@ -14,7 +14,7 @@ import { DataTable, type Column } from '@/components/tables/DataTable';
 import { InfoBanner } from '@/components/common/Misc';
 import { VehicleForm } from './VehicleForm';
 import { VEHICLE_STATUS_META } from '@/constants';
-import { number } from '@/utils/format';
+import { currency, number } from '@/utils/format';
 import { exportToCsv } from '@/utils/csv';
 import type { Vehicle } from '@/types';
 
@@ -57,6 +57,7 @@ export default function VehiclesPage() {
     ) },
     { key: 'capacityKg', header: 'Capacity', align: 'right', sortable: true, render: (v) => `${number(v.capacityKg)} kg` },
     { key: 'odometerKm', header: 'Odometer', align: 'right', sortable: true, render: (v) => `${number(v.odometerKm)} km` },
+    { key: 'acquisitionCost', header: 'Acq. Cost', align: 'right', render: (v) => currency(v.acquisitionCost) },
     { key: 'status', header: 'Status', render: (v) => <StatusBadge status={v.status} meta={VEHICLE_STATUS_META} /> },
     ...(canWrite
       ? [
@@ -94,6 +95,7 @@ export default function VehiclesPage() {
         { key: 'year', header: 'Year' },
         { key: 'capacityKg', header: 'Capacity (kg)' },
         { key: 'odometerKm', header: 'Odometer (km)' },
+        { key: 'acquisitionCost', header: 'Acquisition Cost' },
         { key: 'status', header: 'Status' },
       ],
       data?.items ?? []

@@ -15,7 +15,8 @@ export const createVehicleSchema = z.object({
     model: z.string().trim().min(1).max(50),
     year: z.coerce.number().int().min(1950).max(2100).optional(),
     capacityKg: z.coerce.number().positive('Capacity must be greater than zero.').max(100000),
-    odometerKm: z.coerce.number().min(0).optional(),
+    odometerKm: z.coerce.number().min(0).max(10000000, 'Odometer must be at most 10,000,000 km.').optional(),
+    acquisitionCost: z.coerce.number().min(0).max(100000000).optional(),
   }),
 });
 
@@ -28,7 +29,8 @@ export const updateVehicleSchema = z.object({
       model: z.string().trim().min(1).max(50).optional(),
       year: z.coerce.number().int().min(1950).max(2100).optional(),
       capacityKg: z.coerce.number().positive().max(100000).optional(),
-      odometerKm: z.coerce.number().min(0).optional(),
+      odometerKm: z.coerce.number().min(0).max(10000000, 'Odometer must be at most 10,000,000 km.').optional(),
+      acquisitionCost: z.coerce.number().min(0).max(100000000).optional(),
     })
     .refine((b) => Object.keys(b).length > 0, { message: 'At least one field is required.' }),
 });

@@ -97,3 +97,11 @@ body {
   border: 1px solid rgb(var(--border)) !important;
   border-radius: 0.5rem !important;
 }
+/* Tooltip text follows the theme: white on dark, black on light. */
+.recharts-tooltip-label,
+.recharts-tooltip-item,
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value,
+.recharts-tooltip-item-separator {
+  color: rgb(var(--content)) !important;
+}

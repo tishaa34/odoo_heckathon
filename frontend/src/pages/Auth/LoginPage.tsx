@@ -86,23 +86,9 @@ export default function LoginPage() {
             Dispatch trips, track vehicles & drivers, log maintenance and fuel, and see live operational costs — with role-based
             access for your whole team.
           </p>
-          <ul className="mt-8 space-y-3 text-sm">
-            {[
-              ['Fleet Manager', 'Fleet, drivers & full oversight'],
-              ['Driver', 'Create trips & dispatch vehicles'],
-              ['Safety Officer', 'Drivers & maintenance compliance'],
-              ['Financial Analyst', 'Fuel, expenses & analytics'],
-            ].map(([role, desc]) => (
-              <li key={role} className="flex items-center gap-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                <span className="font-semibold text-content">{role}</span>
-                <span className="text-muted">— {desc}</span>
-              </li>
-            ))}
-          </ul>
         </div>
 
-        <p className="relative text-xs text-muted">TransitOps © 2026 · RBAC enabled</p>
+        <p className="relative text-xs text-muted">TransitOps © 2026</p>
       </div>
 
       {/* Form panel */}
@@ -180,7 +166,6 @@ export default function LoginPage() {
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-[11px] text-muted">Password for all demo accounts: <code className="text-content">Password123!</code></p>
           </div>
         </div>
       </div>

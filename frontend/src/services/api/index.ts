@@ -57,6 +57,7 @@ export interface VehicleInput {
   year?: number;
   capacityKg: number;
   odometerKm?: number;
+  acquisitionCost?: number;
 }
 export const vehiclesApi = {
   list: (params?: ListParams) => unwrapList<Vehicle>(http.get('/vehicles', { params: clean(params) })),

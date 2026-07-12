@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Check, Minus, Eye, LogOut, Moon, Sun, Monitor } from 'lucide-react';
+import { Check, Minus, Eye, LogOut, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { PageHeader } from '@/components/common/Misc';
@@ -97,14 +97,12 @@ export default function SettingsPage() {
               <Input label="Distance Unit" defaultValue="Kilometers" disabled />
               <Input label="Time Zone" defaultValue="Asia/Kolkata" disabled />
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-surface-2 px-3 py-2 text-xs text-muted">
-              <Monitor className="h-4 w-4" /> Preferences are stored locally in your browser.
-            </div>
           </div>
         </Card>
       </div>
 
-      {/* RBAC matrix */}
+      {/* RBAC matrix — visible to Fleet Managers only. */}
+      {user?.role === 'FLEET_MANAGER' && (
       <Card className="mt-4">
         <CardHeader title="Role-Based Access Control" subtitle="How access is scoped across the platform" />
         <div className="w-full overflow-x-auto">
@@ -137,6 +135,7 @@ export default function SettingsPage() {
           </table>
         </div>
       </Card>
+      )}
     </div>
   );
 }

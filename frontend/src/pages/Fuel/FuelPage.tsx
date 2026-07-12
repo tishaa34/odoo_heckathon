@@ -71,11 +71,9 @@ export default function FuelPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3">
         <KpiCard label="Fuel Cost" value={currency(costs?.fuelCost ?? 0)} icon={FuelIcon} tone="blue" />
         <KpiCard label="Fuel Consumed" value={`${number(costs?.fuelLiters ?? 0)} L`} icon={FuelIcon} tone="green" />
-        <KpiCard label="Maintenance" value={currency(costs?.maintenanceCost ?? 0)} icon={Receipt} tone="orange" />
-        <KpiCard label="Total Op. Cost" value={currency(costs?.totalOperationalCost ?? 0)} icon={Receipt} tone="yellow" hint="Fuel + Maintenance + Expenses" />
       </div>
 
       <Card className="mt-4">
